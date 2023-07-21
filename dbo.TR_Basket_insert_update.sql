@@ -1,0 +1,9 @@
+CREATE TRIGGER Basket_INS_UPD ON ICSIT.dbo.Basket
+AFTER INSERT, UPDATE
+AS
+UPDATE ICSIT.dbo.Basket
+SET DiscountValue = Value * 0.05
+WHERE ID_SKU IN (SELECT ID_SKU
+				 FROM inserted
+				 GROUP BY ID_SKU
+				 HAVING COUNT(ID_SKU) >= 2)
