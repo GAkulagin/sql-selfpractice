@@ -1,65 +1,56 @@
-USE ICSIT;
+use ICSIT;
 
-IF OBJECT_ID('dbo.Basket', 'U') IS NOT NULL
-BEGIN
-	ALTER TABLE dbo.Basket
-		DROP CONSTRAINT FK_SKU, CONSTRAINT FK_Family;
-	DROP TABLE dbo.Basket;
-END;
-IF OBJECT_ID('dbo.SKU', 'U') IS NOT NULL DROP TABLE dbo.SKU;
-IF OBJECT_ID('dbo.Family', 'U') IS NOT NULL DROP TABLE dbo.Family;
+if object_id('dbo.Basket') is null
+begin
+	-- Продукт
+	create table dbo.SKU
+	(
+		ID int not null identity(1, 1),
+		Code as 's' + cast(ID as varchar(5)),
+		[Name]	varchar(255) not null,
+		constraint PK_SKU primary key (ID),
+		constraint UK_SKU_Code unique (Code)
+	)
 
-CREATE TABLE dbo.SKU
-(
-	ID		INT				NOT NULL 
-		IDENTITY(1, 1) 
-		CONSTRAINT PK_SKU  PRIMARY KEY,
-	Code AS 's' + CAST(ID AS VARCHAR) 
-		CONSTRAINT UNQ_Code UNIQUE(Code),
-	Name	VARCHAR(255)	NOT NULL
-);
+	-- Семья
+	create table dbo.Family
+	(
+		ID int not null identity(1, 1),
+		SurName varchar(255) not null,
+		BudgetValue decimal(18, 2) not null,
+		constraint PK_Family primary key (ID)
+	)
 
-CREATE TABLE dbo.Family
-(
-	ID			INT				NOT NULL 
-		IDENTITY(1, 1) 
-		CONSTRAINT PK_Family  PRIMARY KEY,
-	SurName		VARCHAR(255)	NOT NULL,
-	BudgetValue DECIMAL(18, 2)	NOT NULL
-);
+	-- Продуктовая корзина семьи
+	create table dbo.Basket
+	(
+		ID int not null identity(1, 1),
+		ID_SKU int not null,
+		ID_Family int not null,
+		Quantity int not null,
+		[Value]	decimal(10, 2) not null,
+		PurchaseDate datetime not null,
+		DiscountValue decimal(10, 2) not null,
+		constraint PK_Basket primary key (ID),
+		constraint FK_Basket_ID_SKU_SKU foreign key (ID_SKU) references dbo.SKU(ID),
+		constraint FK_Basket_ID_Famliy_Family foreign key (ID_Family) references dbo.Family(ID),
+		constraint CK_Basket_Quantity check (Quantity >= 0),
+		constraint CK_Basket_Value check ([Value] >= 0),
+		constraint DF_Basket_PurchaseDate default getdate() for PurchaseDate,
+		constraint DF_Basket_DiscountValue default 0 for DiscountValue
+	)
 
-CREATE TABLE dbo.Basket
-(
-	ID				INT				NOT NULL 
-		IDENTITY(1, 1) 
-		CONSTRAINT PK_Basket  PRIMARY KEY,
-	ID_SKU			INT				NOT NULL 
-		CONSTRAINT FK_SKU FOREIGN KEY(ID_SKU) 
-		REFERENCES dbo.SKU(ID),
-	ID_Family		INT				NOT NULL 
-		CONSTRAINT FK_Family FOREIGN KEY(ID_Family) 
-		REFERENCES dbo.Family(ID),
-	Quantity		INT				NOT NULL 
-		CONSTRAINT CHK_Quantity CHECK(Quantity >= 0),
-	Value			DECIMAL(10, 2)	NOT NULL 
-		CONSTRAINT CHK_Value CHECK(Value >= 0),
-	PurchaseDate	DATETIME		NOT NULL 
-		CONSTRAINT DFT_PurchaseDate DEFAULT(GETDATE()),
-	DiscountValue	DECIMAL(10, 2)	NOT NULL
-		CONSTRAINT DFT_DiscountValue DEFAULT 0
-);
+	insert into dbo.Family (SurName, BudgetValue)
+	values
+		('Ивановы', 50000)
+		,('Речных', 100000)
+		,('Даниловы', 100000)
+		,('Пушины', 87500)
+		,('Пентины', 1000000)
 
-
-INSERT INTO dbo.Family(SurName, BudgetValue)
-VALUES
-	('Ивановы', 50000),
-	('Речных', 100000),
-	('Даниловы', 100000),
-	('Пушины', 87500),
-	('Пентины', 1000000);
-
-INSERT INTO dbo.SKU(Name)
-VALUES
-	('product1'),
-	('product2'),
-	('product3');
+	insert into dbo.SKU ([Name])
+	values
+		('product1')
+		,('product2')
+		,('product3')
+end
