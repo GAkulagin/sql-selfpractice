@@ -1,3 +1,8 @@
-CREATE VIEW SKUPrice_VW AS
-SELECT ID, Code, Name, ICSIT.dbo.GetSKUPrice(ID) AS Price
-FROM ICSIT.dbo.SKU
+create or alter view SKUPrice_VW 
+as
+	select 
+		ID
+		,Code
+		,[Name]
+		,ICSIT.dbo.GetSKUPrice(ID) as Price
+	from ICSIT.dbo.SKU
