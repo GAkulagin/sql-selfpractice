@@ -1,7 +1,9 @@
-CREATE FUNCTION GetSKUPrice(@ID_SKU AS INT)
-RETURNS DECIMAL(18, 2)
-AS BEGIN
-	RETURN (SELECT SUM(Value) / SUM(Quantity)
-			FROM ICSIT.dbo.Basket
-			WHERE ID_SKU = @ID_SKU)
-END;
+create or alter function udf_GetSKUPrice(@ID_SKU as int)
+returns decimal(18, 2)
+as
+begin
+return
+	(select sum(Value) / sum(Quantity)
+	from ICSIT.dbo.Basket
+	where ID_SKU = @ID_SKU)
+end
